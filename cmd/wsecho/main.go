@@ -45,6 +45,7 @@ func newCommand() *ffcli.Command {
 		Subcommands: []*ffcli.Command{
 			newVersionCommand(),
 			newServeCommand(),
+			newPingCommand(),
 		},
 	}
 }
@@ -82,7 +83,7 @@ func newServeCommand() *ffcli.Command {
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
 	_ = fs.String("config", "", "config file (optional)")
 
-	port := fs.Int("port", 0, "port number")
+	addr := fs.String("addr", ":1337", "address to listen on")
 
 	return &ffcli.Command{
 		Name:       cmd,
@@ -95,10 +96,44 @@ func newServeCommand() *ffcli.Command {
 		ShortHelp: fmt.Sprintf("wsecho %s command", cmd),
 		FlagSet:   fs,
 		Exec: func(ctx context.Context, args []string) error {
-			if *port == 0 {
-				return errors.New("missing port")
+			if *addr == "" {
+				return errors.New("missing address")
 			}
-			return wsecho.Serve(ctx, *port)
+			return wsecho.Serve(ctx, *addr)
+		},
+	}
+}
+
+func newPingCommand() *ffcli.Command {
+	cmd := "ping"
+	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
+	_ = fs.String("config", "", "config file (optional)")
+
+	host := fs.String("host", "ws://localhost:1337", "address to ping, e.g. ws://localhost:1337")
+	n := fs.Int("n", 10, "number of pings to send")
+	size := fs.Int("size", 32, "size of each ping message")
+
+	return &ffcli.Command{
+		Name:       cmd,
+		ShortUsage: fmt.Sprintf("wsecho %s [flags] <key> <value data...>", cmd),
+		Options: []ff.Option{
+			ff.WithConfigFileFlag("config"),
+			ff.WithConfigFileParser(ff.PlainParser),
+			ff.WithEnvVarPrefix("WSECHO"),
+		},
+		ShortHelp: fmt.Sprintf("wsecho %s command", cmd),
+		FlagSet:   fs,
+		Exec: func(ctx context.Context, args []string) error {
+			if *host == "" {
+				return errors.New("missing host")
+			}
+			if *n < 1 {
+				return errors.New("n must be greater than 0")
+			}
+			if *size < 1 {
+				return errors.New("size must be greater than 0")
+			}
+			return wsecho.Ping(ctx, *host, *n, *size)
 		},
 	}
 }
