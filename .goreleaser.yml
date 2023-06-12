@@ -1,0 +1,14 @@
+builds:
+  - id: wsecho
+    binary: wsecho
+    main: ./cmd/wsecho
+    goarch:
+      - amd64
+      - arm64
+      - arm
+archives:
+  - id: wsecho
+    builds:
+      - wsecho
+    format: zip
+    name_template: 'wsecho_{{ .Version }}_{{- if eq .Os "darwin" }}macos{{- else }}{{ .Os }}{{ end }}_{{ .Arch }}'

@@ -1,2 +1,3 @@
-# websocket-echo
-Websocket echo in golang
+# wsecho
+
+WebSocket echo server
