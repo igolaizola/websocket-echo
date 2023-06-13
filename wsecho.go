@@ -14,10 +14,17 @@ import (
 func Serve(ctx context.Context, addr string) error {
 	log.Printf("server listening on %s\n", addr)
 
+	// Create a new server mux.
+	mux := http.NewServeMux()
+	mux.Handle("/", NewServer())
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("ok"))
+	})
+
 	// Create a new server.
 	srv := &http.Server{
 		Addr:    addr,
-		Handler: NewServer(),
+		Handler: mux,
 	}
 
 	// Listen until the context is cancelled.
