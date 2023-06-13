@@ -146,7 +146,7 @@ func Ping(ctx context.Context, host string, n, size int) error {
 	})
 
 	// Send data
-	var elapsed []time.Duration
+	var elapseds []time.Duration
 	for i := 0; i < n; i++ {
 		select {
 		case <-ctx.Done():
@@ -163,17 +163,18 @@ func Ping(ctx context.Context, host string, n, size int) error {
 			break
 		}
 		elapsed := time.Since(start)
+		elapseds = append(elapseds, elapsed)
 		log.Printf("sent %d bytes in %s\n", size, elapsed)
 	}
 
 	// Print average
-	if len(elapsed) > 0 {
+	if len(elapseds) > 0 {
 		var sum time.Duration
-		for _, d := range elapsed {
+		for _, d := range elapseds {
 			sum += d
 		}
 		log.Println("average:")
-		log.Printf("sent %d bytes in %s\n", size*len(elapsed), sum/time.Duration(len(elapsed)))
+		log.Printf("sent %d bytes in %s\n", size*len(elapseds), sum/time.Duration(len(elapseds)))
 	}
 	return nil
 }
