@@ -112,6 +112,7 @@ func newPingCommand() *ffcli.Command {
 	host := fs.String("host", "ws://localhost:1337", "address to ping, e.g. ws://localhost:1337")
 	n := fs.Int("n", 10, "number of pings to send")
 	size := fs.Int("size", 32, "size of each ping message")
+	insecure := fs.Bool("insecure", false, "insecure, skip TLS verification")
 
 	return &ffcli.Command{
 		Name:       cmd,
@@ -133,7 +134,7 @@ func newPingCommand() *ffcli.Command {
 			if *size < 1 {
 				return errors.New("size must be greater than 0")
 			}
-			return wsecho.Ping(ctx, *host, *n, *size)
+			return wsecho.Ping(ctx, *host, *n, *size, *insecure)
 		},
 	}
 }

@@ -2,6 +2,7 @@ package wsecho
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
@@ -112,12 +113,19 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Ping(ctx context.Context, host string, n, size int) error {
+func Ping(ctx context.Context, host string, n, size int, insecure bool) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	// Connect to the websocket server.
-	conn, _, err := websocket.DefaultDialer.Dial(host, nil)
+	// Create a new dialer.
+	dialer := websocket.Dialer{
+		HandshakeTimeout: 5 * time.Second,
+		// Skip TLS verification.
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
+	}
+
+	// Dial the host.
+	conn, _, err := dialer.Dial(host, nil)
 	if err != nil {
 		return fmt.Errorf("couldn't dial: %w", err)
 	}
